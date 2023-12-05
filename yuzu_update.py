@@ -1,14 +1,18 @@
-import os
-import shutil
-import zipfile
-from subprocess import check_call
-
 try:
+    import os
+    import shutil
+    import zipfile
+    from subprocess import check_call
     import requests
-except ImportError:
-    print("Installing requests module...")
-    check_call(['pip', 'install', 'requests'])
-    import requests
+except ImportError as e:
+    print(f"Error importing required module: {e}")
+    print("Installing necessary modules...")
+    try:
+        check_call(['pip', 'install', 'requests'])
+        import requests
+    except Exception as install_error:
+        print(f"Error installing module: {install_error}")
+        exit(1)
 
 class YuzuUpdater:
     def __init__(self, repo, version_subdirectory="yuzu-windows-msvc-early-access"):
@@ -23,9 +27,10 @@ class YuzuUpdater:
         return response.json()
 
     def download_and_extract_release(self, download_url, file_name, temp_dir):
-        response = requests.get(download_url, stream=True)
-        with open(file_name, "wb") as file:
-            shutil.copyfileobj(response.raw, file)
+        with requests.get(download_url, stream=True) as response:
+            response.raise_for_status()
+            with open(file_name, "wb") as file:
+                shutil.copyfileobj(response.raw, file)
 
         with zipfile.ZipFile(file_name, 'r') as zip_ref:
             zip_ref.extractall(temp_dir)
@@ -75,12 +80,7 @@ class YuzuUpdater:
         for item in os.listdir(temp_dir):
             item_path = os.path.join(temp_dir, item)
             target_path = os.path.join(self.windows_directory, item)
-
-            if os.path.exists(target_path):
-                print(f"Destination path '{target_path}' already exists. Removing existing contents...")
-                shutil.rmtree(target_path)
-
-            shutil.move(item_path, self.windows_directory)
+            shutil.copytree(item_path, target_path, dirs_exist_ok=True)
 
         shutil.rmtree(temp_dir)
 
