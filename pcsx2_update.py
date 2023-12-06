@@ -1,6 +1,7 @@
 import shutil
 import os
 import logging
+from configparser import ConfigParser
 
 # Try importing libraries, and if they are missing, install them using pip
 try:
@@ -19,9 +20,16 @@ except ImportError:
 
 
 class PCSX2QtUpdater:
-    def __init__(self, github_repo_url, download_directory="./downloaded_pre_releases"):
-        self.github_repo_url = github_repo_url
-        self.download_directory = download_directory
+    def __init__(self, config_path="config.ini"):
+
+        self.config = ConfigParser()
+        self.config.read(config_path)
+
+        self.github_repo_url = self.config.get(
+            "PCSX2QtUpdater", "github_repo_url")
+        self.download_directory = self.config.get(
+            "PCSX2QtUpdater", "download_directory")
+        self.log_file = self.config.get("PCSX2QtUpdater", "log_file")
 
         if not os.path.exists(self.download_directory):
             os.makedirs(self.download_directory)
@@ -138,6 +146,6 @@ if __name__ == "__main__":
         os.remove("pcsx2_qt_updater.log")
 
     logging.basicConfig(filename="pcsx2_qt_updater.log", level=logging.INFO)
-    github_repo_url = "https://api.github.com/repos/PCSX2/pcsx2"
-    updater = PCSX2QtUpdater(github_repo_url)
+
+    updater = PCSX2QtUpdater()
     updater.download_and_extract_latest_pre_release()
