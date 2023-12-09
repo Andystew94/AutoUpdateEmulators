@@ -7,3 +7,6 @@ if __name__ == "__main__":
 
     RPCS3_updater = EmulatorUpdater("RPCS3")
     RPCS3_updater.update_emulator()
+
+    PCSX2_updater = EmulatorUpdater("PCSX2-Qt")
+    PCSX2_updater.update_emulator()
