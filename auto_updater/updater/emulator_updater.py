@@ -41,6 +41,8 @@ class EmulatorUpdater:
         self.emulator_directory = self.find_emulator_directory()
         if self.has_sub_folder:
             self.emulator_directory = f"{self.emulator_directory}\\{self.sub_folder_name}"
+        self.copy_folder_contents_only = self.config.getboolean(
+            emulator_name, "copy_folder_contents_only")
         self.release_info = self.fetch_latest_release_info()
         self.download_directory = os.path.join(
             os.getcwd(), "downloads", self.emulator_name)
@@ -105,11 +107,17 @@ class EmulatorUpdater:
         if not os.path.exists(self.download_directory):
             os.makedirs(self.download_directory)
 
-        download_url = next(
-            (asset['browser_download_url'] for asset in self.release_info['assets']
-             if asset['name'].endswith((".zip", ".7z")) and self.release_asset_name_identifier in asset['name']),
-            None
-        )
+        if self.release_info is not None and 'assets' in self.release_info and self.release_info['assets'] is not None:
+            download_url = next(
+                (asset['browser_download_url'] for asset in self.release_info['assets']
+                 if asset['name'].endswith((".zip", ".7z")) and self.release_asset_name_identifier in asset['name']),
+                None
+            )
+        else:
+            # Handle the case where assets or release_info is None
+            print(
+                f"Error: Release information or assets are not available for {self.emulator_name}. Check github_repo_url in config.ini")
+            exit()
 
         if download_url is None:
             raise RuntimeError(
@@ -123,6 +131,19 @@ class EmulatorUpdater:
         extracted_folder_name = os.listdir(self.download_directory)[0]
         extracted_folder_directory = os.path.join(
             self.download_directory, extracted_folder_name)
+
+        # Check if there is exactly one item in the directory
+        items = os.listdir(self.download_directory)
+
+        if len(items) == 1:
+            # Check if the single item is a folder
+            item_path = os.path.join(self.download_directory, items[0])
+            if os.path.isdir(item_path):
+                self.has_sub_folder = True
+            else:
+                self.has_sub_folder = False
+        else:
+            self.has_sub_folder = False
 
         if self.exe_rename_required:
             self.rename_file(
@@ -142,14 +163,31 @@ class EmulatorUpdater:
         if not os.path.exists(self.emulator_directory):
             os.makedirs(self.emulator_directory)
 
-        if self.sub_folder_name == "True":
-            shutil.copytree(extracted_folder_directory,
-                            self.emulator_directory, dirs_exist_ok=True)
-            shutil.rmtree(extracted_folder_directory)
-        else:
-            shutil.copytree(self.download_directory,
-                            self.emulator_directory, dirs_exist_ok=True)
+        if self.copy_folder_contents_only:
+            contents = os.listdir(extracted_folder_directory)
+
+            # Copy each item in the source directory to the destination directory
+            for item in contents:
+                source_item = os.path.join(extracted_folder_directory, item)
+                destination_item = os.path.join(self.emulator_directory, item)
+
+                if os.path.isdir(source_item):
+                    shutil.copytree(
+                        source_item, destination_item, dirs_exist_ok=True)
+                else:
+                    # Use copy2 to preserve metadata if needed
+                    shutil.copy2(source_item, destination_item)
             shutil.rmtree(self.download_directory)
+
+        else:
+            if self.has_sub_folder == "True":
+                shutil.copytree(extracted_folder_directory,
+                                self.emulator_directory, dirs_exist_ok=True)
+                shutil.rmtree(extracted_folder_directory)
+            else:
+                shutil.copytree(self.download_directory,
+                                self.emulator_directory, dirs_exist_ok=True)
+                shutil.rmtree(self.download_directory)
 
         print("Download, extraction, and version information written to 'version.txt' complete.")
         return True
