@@ -15,45 +15,53 @@ except ImportError as e:
         exit(1)
 
 from configparser import ConfigParser
-from helpers.seven_zip import SevenZip
+from auto_updater.helpers.seven_zip import SevenZip
 
 
 class EmulatorUpdater:
     def __init__(self, emulator_name):
         self.emulator_name = emulator_name
         self.config = ConfigParser()
-        self.config.read(os.path.join(
-            os.getcwd(), "auto_updater", "config.ini"))
-        self.github_repo_url = self.config.get(
-            emulator_name, "github_repo_url")
-        self.github_version_identifier = self.config.get(
-            emulator_name, "github_version_identifier")
-        self.has_sub_folder = self.config.getboolean(
-            emulator_name, "has_sub_folder")
-        self.sub_folder_name = self.config.get(
-            emulator_name, "sub_folder_name") if self.has_sub_folder else None
-        self.release_asset_name_identifier = self.config.get(
-            emulator_name, "release_asset_name_identifier")
-        self.exe_rename_required = self.config.getboolean(
-            emulator_name, "exe_rename_required")
-        self.exe_rename_filenames = self.config.get(emulator_name, "exe_rename_filenames").split(
-            ", ") if self.exe_rename_required else None
-        self.emulator_directory = self.find_emulator_directory()
-        if self.has_sub_folder:
-            self.emulator_directory = f"{self.emulator_directory}\\{self.sub_folder_name}"
-        self.copy_folder_contents_only = self.config.getboolean(
-            emulator_name, "copy_folder_contents_only")
-        self.release_info = self.fetch_latest_release_info()
-        self.download_directory = os.path.join(
-            os.getcwd(), "downloads", self.emulator_name)
-        self.SevenZip = SevenZip()
+        try:
+            self.config.read(os.path.join(
+                os.getcwd(), "config.ini"))
+            self.github_repo_url = self.config.get(
+                emulator_name, "github_repo_url")
+            self.github_version_identifier = self.config.get(
+                emulator_name, "github_version_identifier")
+            self.has_sub_folder = self.config.getboolean(
+                emulator_name, "has_sub_folder")
+            self.sub_folder_name = self.config.get(
+                emulator_name, "sub_folder_name") if self.has_sub_folder else None
+            self.release_asset_name_identifier = self.config.get(
+                emulator_name, "release_asset_name_identifier")
+            self.exe_rename_required = self.config.getboolean(
+                emulator_name, "exe_rename_required")
+            self.exe_rename_filenames = self.config.get(emulator_name, "exe_rename_filenames").split(
+                ", ") if self.exe_rename_required else None
+            self.copy_folder_contents_only = self.config.getboolean(
+                emulator_name, "copy_folder_contents_only")
+        except:
+            print(f"config.ini not configured for {self.emulator_name}...")
+            exit()
+        else:
+            self.emulator_directory = self.find_emulator_directory()
+            if self.has_sub_folder:
+                self.emulator_directory = f"{self.emulator_directory}\\{self.sub_folder_name}"
+            self.release_info = self.fetch_latest_release_info()
+            self.download_directory = os.path.join(
+                os.getcwd(), "downloads", self.emulator_name)
+            self.SevenZip = SevenZip()
 
     def fetch_latest_release_info(self):
         response = requests.get(self.github_repo_url)
 
         try:
             response = next(
-                (release for release in response.json() if release['prerelease']), None)
+                (release for release in response.json() if release['prerelease']))
+        except StopIteration:
+            response = next(
+                (release for release in response.json() if not release['prerelease']))
         except:
             response = response.json()
 
@@ -106,6 +114,9 @@ class EmulatorUpdater:
 
         if not os.path.exists(self.download_directory):
             os.makedirs(self.download_directory)
+
+        # print(self.release_info)
+        print(self.release_info['assets'][0])
 
         if self.release_info is not None and 'assets' in self.release_info and self.release_info['assets'] is not None:
             download_url = next(

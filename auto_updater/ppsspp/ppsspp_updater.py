@@ -2,9 +2,7 @@ import re
 import os
 import shutil
 from subprocess import check_call
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from helpers.seven_zip import SevenZip
+from auto_updater.helpers.seven_zip import SevenZip
 
 try:
     import requests
@@ -14,6 +12,20 @@ except ImportError as e:
     try:
         check_call(['pip', 'install', 'requests'])
         import requests
+    except Exception as install_error:
+        print(f"Error installing module: {install_error}")
+        exit(1)
+
+try:
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+except ImportError as e:
+    print(f"Error importing required module: {e}")
+    print("Installing necessary modules...")
+    try:
+        check_call(['pip', 'install', 'selenium'])
+        from selenium import webdriver
+        from selenium.webdriver.common.by import By
     except Exception as install_error:
         print(f"Error installing module: {install_error}")
         exit(1)
