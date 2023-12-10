@@ -22,33 +22,26 @@ class EmulatorUpdater:
     def __init__(self, emulator_name):
         self.emulator_name = emulator_name
         self.config = ConfigParser()
-        self.config.read(f"{os.getcwd()}\\auto_updater\config.ini")
+        self.config.read(os.path.join(
+            os.getcwd(), "auto_updater", "config.ini"))
         self.github_repo_url = self.config.get(
             emulator_name, "github_repo_url")
-        self.has_sub_folder = (self.config.get(
-            emulator_name, "has_sub_folder"))
-        self.sub_folder_name = None
+        self.github_version_identifier = self.config.get(
+            emulator_name, "github_version_identifier")
+        self.has_sub_folder = self.config.getboolean(
+            emulator_name, "has_sub_folder")
+        self.sub_folder_name = self.config.get(
+            emulator_name, "sub_folder_name") if self.has_sub_folder else None
         self.release_asset_name_identifier = self.config.get(
             emulator_name, "release_asset_name_identifier")
-        self.exe_rename_required = (self.config.get(
-            emulator_name, "exe_rename_required"))
-        self.exe_rename_filenames = None
+        self.exe_rename_required = self.config.getboolean(
+            emulator_name, "exe_rename_required")
+        self.exe_rename_filenames = self.config.get(emulator_name, "exe_rename_filenames").split(
+            ", ") if self.exe_rename_required else None
         self.emulator_directory = self.find_emulator_directory()
+        if self.has_sub_folder:
+            self.emulator_directory = f"{self.emulator_directory}\\{self.sub_folder_name}"
         self.release_info = self.fetch_latest_release_info()
-
-        # For any zip which has the emulator files in a subfolder. I.e. Yuzu EA
-        if self.has_sub_folder == "True":
-            self.sub_folder_name = self.config.get(
-                emulator_name, "sub_folder_name")
-            self.windows_directory = f"{self.emulator_directory}\\{self.sub_folder_name}"
-        else:
-            self.windows_directory = self.find_emulator_directory()
-
-        # Github zip has a differently named exe when compared to the emudeck\EmulationStation-DE\Emulators. I.e. PCSX2-Qt
-        if self.exe_rename_required == "True":
-            self.exe_rename_filenames = self.config.get(
-                emulator_name, "exe_rename_filenames").split(", ")
-
         self.download_directory = os.path.join(
             os.getcwd(), "downloads", self.emulator_name)
         self.SevenZip = SevenZip()
@@ -76,9 +69,9 @@ class EmulatorUpdater:
             downloads_file_path, self.download_directory)
         os.remove(downloads_file_path)
 
-    def write_version_file(self, version_file_path, tag_name):
+    def write_version_file(self, version_file_path, version_identifier):
         with open(version_file_path, 'w') as version_file:
-            version_file.write(tag_name)
+            version_file.write(version_identifier)
 
     def find_emulator_directory(self):
         users_path = "C:\\Users"
@@ -92,21 +85,19 @@ class EmulatorUpdater:
 
     def rename_file(self, directory_path, original_name, new_name):
         original_file_path = os.path.join(directory_path, original_name)
-        print(original_file_path)
         new_file_path = os.path.join(directory_path, new_name)
-        print(new_file_path)
         if os.path.exists(original_file_path):
             os.rename(original_file_path, new_file_path)
             print(f"Renamed {original_name} to {new_name}")
 
     def update_emulator(self):
         existing_version_file_path = os.path.join(
-            self.windows_directory, "version.txt")
+            self.emulator_directory, "version.txt")
 
         if os.path.exists(existing_version_file_path):
             with open(existing_version_file_path, 'r') as existing_version_file:
                 existing_version = existing_version_file.read().strip()
-                if existing_version == self.release_info["tag_name"]:
+                if existing_version == str(self.release_info[self.github_version_identifier]):
                     print(
                         f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
                     return False
@@ -126,31 +117,30 @@ class EmulatorUpdater:
 
         file_name = os.path.basename(download_url)
 
-        print(f"Downloading {file_name} to {self.windows_directory}...")
+        print(f"Downloading {file_name} to {self.emulator_directory}...")
         self.download_and_extract_release(download_url, file_name)
 
         extracted_folder_name = os.listdir(self.download_directory)[0]
         extracted_folder_directory = os.path.join(
             self.download_directory, extracted_folder_name)
 
-        print(self.exe_rename_filenames)
+        if self.exe_rename_required:
+            self.rename_file(
+                self.download_directory, self.exe_rename_filenames[0], self.exe_rename_filenames[1])
 
-        if self.exe_rename_required == "True":
-            self.rename_file(self.download_directory,
-                             self.exe_rename_filenames[0], self.exe_rename_filenames[1])
-        if self.exe_rename_required == "True" and self.has_sub_folder == "True":
-            self.rename_file(extracted_folder_name,
-                             self.exe_rename_filenames[0], self.exe_rename_filenames[1])
+        if self.exe_rename_required and self.has_sub_folder:
+            self.rename_file(
+                extracted_folder_name, self.exe_rename_filenames[0], self.exe_rename_filenames[1])
 
         version_file_path = os.path.join(
-            self.download_directory, extracted_folder_name, "version.txt") if self.has_sub_folder == "True" else os.path.join(
+            self.download_directory, extracted_folder_name, "version.txt") if self.has_sub_folder else os.path.join(
             self.download_directory, "version.txt")
 
         self.write_version_file(
-            version_file_path, self.release_info["tag_name"])
+            version_file_path, str(self.release_info[self.github_version_identifier]))
 
-        if not os.path.exists(self.windows_directory):
-            os.makedirs(self.windows_directory)
+        if not os.path.exists(self.emulator_directory):
+            os.makedirs(self.emulator_directory)
 
         if self.sub_folder_name == "True":
             shutil.copytree(extracted_folder_directory,

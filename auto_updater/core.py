@@ -1,4 +1,5 @@
 from updater.emulator_updater import EmulatorUpdater
+from ppsspp.ppsspp_updater import PPSSPPUpdater
 
 if __name__ == "__main__":
 
@@ -10,3 +11,9 @@ if __name__ == "__main__":
 
     PCSX2_updater = EmulatorUpdater("PCSX2-Qt")
     PCSX2_updater.update_emulator()
+
+    duckstation_updater = EmulatorUpdater("duckstation")
+    duckstation_updater.update_emulator()
+
+    PPSSPP_updater = PPSSPPUpdater()
+    PPSSPP_updater.update_emulator()
