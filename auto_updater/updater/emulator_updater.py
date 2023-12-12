@@ -100,6 +100,23 @@ class EmulatorUpdater:
             os.rename(original_file_path, new_file_path)
             print(f"Renamed {original_name} to {new_name}")
 
+    def delete_files_with_extension(self, directory, extension):
+        try:
+            # Iterate over all items (files and directories) in the directory
+            for item in os.listdir(directory):
+                item_path = os.path.join(directory, item)
+
+                # Check if the item is a file and has the specified extension
+                if os.path.isfile(item_path) and item.endswith(extension):
+                    # Delete the file
+                    os.remove(item_path)
+                    print(f"Deleted: {item_path}")
+
+            print(f"Deletion of {extension} files completed in {directory}")
+
+        except Exception as e:
+            print(f"Error deleting files: {e}")
+
     def update_emulator(self):
         existing_version_file_path = os.path.join(
             self.emulator_directory, "version.txt")
@@ -114,9 +131,6 @@ class EmulatorUpdater:
 
         if not os.path.exists(self.download_directory):
             os.makedirs(self.download_directory)
-
-        # print(self.release_info)
-        print(self.release_info['assets'][0])
 
         if self.release_info is not None and 'assets' in self.release_info and self.release_info['assets'] is not None:
             download_url = next(
@@ -142,6 +156,9 @@ class EmulatorUpdater:
         extracted_folder_name = os.listdir(self.download_directory)[0]
         extracted_folder_directory = os.path.join(
             self.download_directory, extracted_folder_name)
+
+        # Remove any source code found in the downloaded extract
+        self.delete_files_with_extension(extracted_folder_directory, ".tar.xz")
 
         # Check if there is exactly one item in the directory
         items = os.listdir(self.download_directory)
@@ -200,5 +217,5 @@ class EmulatorUpdater:
                                 self.emulator_directory, dirs_exist_ok=True)
                 shutil.rmtree(self.download_directory)
 
-        print("Download, extraction, and version information written to 'version.txt' complete.")
+        print(f"Updated {self.emulator_name} successfully.")
         return True

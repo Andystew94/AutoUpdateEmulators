@@ -66,6 +66,7 @@ class PPSSPPUpdater:
             return None
 
     def _extract_version_from_url(self, url):
+        # https://www.ppsspp.org/files/1_16_6/ppsspp_win.zip
         pattern = r'files/([^/]+)/ppsspp_win\.zip'
         match = re.search(pattern, url)
         return match.group(1) if match else None
