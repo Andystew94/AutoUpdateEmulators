@@ -1,10 +1,15 @@
 import os
 from configparser import ConfigParser
+import logging
 from auto_updater.updater.emulator_updater import EmulatorUpdater
 from auto_updater.ppsspp.ppsspp_updater import PPSSPPUpdater
 from auto_updater.dolphin.dolphin_updater import DolphinUpdater
 
 if __name__ == "__main__":
+    # Configure logging to write to a log file
+    log_file_path = os.path.join(os.getcwd(), "update_log.txt")
+    logging.basicConfig(filename=log_file_path, level=logging.INFO,
+                        format='%(asctime)s - %(levelname)s - %(message)s')
 
     # Load configuration from config.ini
     config = ConfigParser()
@@ -22,7 +27,8 @@ if __name__ == "__main__":
                 updater = EmulatorUpdater(emulator_name)
 
             updater.update_emulator()
-        except Exception as e:
-            print(f"Error updating {section}: {e}")
 
-    exit()
+        except Exception as e:
+            error_message = f"Error updating {section}: {e}"
+            logging.error(error_message)
+            print(error_message)

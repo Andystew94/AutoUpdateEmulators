@@ -1,6 +1,7 @@
 import os
 import shutil
 from subprocess import check_call
+import logging
 
 try:
     import requests
@@ -112,8 +113,6 @@ class EmulatorUpdater:
                     os.remove(item_path)
                     print(f"Deleted: {item_path}")
 
-            print(f"Deletion of {extension} files completed in {directory}")
-
         except Exception as e:
             print(f"Error deleting files: {e}")
 
@@ -126,6 +125,8 @@ class EmulatorUpdater:
                 existing_version = existing_version_file.read().strip()
                 if existing_version == str(self.release_info[self.github_version_identifier]):
                     print(
+                        f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
+                    logging.info(
                         f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
                     return False
 
@@ -157,9 +158,6 @@ class EmulatorUpdater:
         extracted_folder_directory = os.path.join(
             self.download_directory, extracted_folder_name)
 
-        # Remove any source code found in the downloaded extract
-        self.delete_files_with_extension(extracted_folder_directory, ".tar.xz")
-
         # Check if there is exactly one item in the directory
         items = os.listdir(self.download_directory)
 
@@ -172,6 +170,14 @@ class EmulatorUpdater:
                 self.has_sub_folder = False
         else:
             self.has_sub_folder = False
+
+        # Remove any source code found in the downloaded extract
+        if self.has_sub_folder == "True":
+            self.delete_files_with_extension(
+                extracted_folder_directory, ".tar.xz")
+        else:
+            self.delete_files_with_extension(
+                self.download_directory, ".tar.xz")
 
         if self.exe_rename_required:
             self.rename_file(
@@ -218,4 +224,5 @@ class EmulatorUpdater:
                 shutil.rmtree(self.download_directory)
 
         print(f"Updated {self.emulator_name} successfully.")
+        logging.info(f"Updated {self.emulator_name} successfully.")
         return True

@@ -5,10 +5,10 @@ from PyInstaller import __main__ as pyi
 working_directory = os.path.join(os.getcwd())
 
 setup(
-    name='emulator_updater',
+    name='Emulator_Updater',
     version='1.0',
-    description='Emulator updater script',
-    author='Your Name',
+    description='Emulator Updater Script',
+    author='Andrew S',
     packages=find_packages(),
     options={
         'build_exe': {
@@ -25,8 +25,8 @@ setup(
             'core.py',
             '--onefile',
             '--distpath', 'dist',
-            '--name', 'emulator_updater.exe',
-            '--console'
+            '--name', 'Emulator_Updater.exe',
+            '--noconsole'
         ])
     ]
 )

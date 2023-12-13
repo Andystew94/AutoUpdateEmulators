@@ -1,6 +1,7 @@
 import re
 import os
 import shutil
+import logging
 from subprocess import check_call
 from auto_updater.helpers.seven_zip import SevenZip
 
@@ -109,6 +110,8 @@ class PPSSPPUpdater:
                 if existing_version == str(repo_version):
                     print(
                         f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
+                    logging.info(
+                        f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
                     return False
 
         if not os.path.exists(self.download_directory):
@@ -124,6 +127,8 @@ class PPSSPPUpdater:
         shutil.copytree(self.download_directory,
                         self.emulator_directory, dirs_exist_ok=True)
         shutil.rmtree(self.download_directory)
+
+        logging.info(f"Updated {self.emulator_name} successfully.")
 
         # Close the browser
         self.driver.quit()

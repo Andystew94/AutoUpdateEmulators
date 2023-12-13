@@ -1,6 +1,7 @@
 import re
 import os
 import shutil
+import logging
 from subprocess import check_call
 from auto_updater.helpers.seven_zip import SevenZip
 
@@ -111,6 +112,8 @@ class DolphinUpdater:
                 if existing_version == str(repo_version):
                     print(
                         f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
+                    logging.info(
+                        f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
                     return False
 
         if not os.path.exists(self.download_directory):
@@ -141,6 +144,8 @@ class DolphinUpdater:
                 # Use copy2 to preserve metadata if needed
                 shutil.copy2(source_item, destination_item)
         shutil.rmtree(self.download_directory)
+
+        logging.info(f"Updated {self.emulator_name} successfully.")
 
         # Close the browser
         self.driver.quit()
