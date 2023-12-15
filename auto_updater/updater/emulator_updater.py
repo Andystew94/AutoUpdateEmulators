@@ -20,39 +20,75 @@ from auto_updater.helpers.seven_zip import SevenZip
 
 
 class EmulatorUpdater:
-    def __init__(self, emulator_name):
-        self.emulator_name = emulator_name
+    def __init__(self, section_name):
         self.config = ConfigParser()
+        self.SevenZip = SevenZip()
+        self.emulator_name = section_name
+
         try:
             self.config.read(os.path.join(
                 os.getcwd(), "config.ini"))
+
+            # Mandatory Fields
+            self.emudeck_folder_name = self.config.get(
+                section_name, "emudeck_folder_name")
             self.github_repo_url = self.config.get(
-                emulator_name, "github_repo_url")
+                section_name, "github_repo_url")
             self.github_version_identifier = self.config.get(
-                emulator_name, "github_version_identifier")
-            self.has_sub_folder = self.config.getboolean(
-                emulator_name, "has_sub_folder")
-            self.sub_folder_name = self.config.get(
-                emulator_name, "sub_folder_name") if self.has_sub_folder else None
+                section_name, "github_version_identifier")
             self.release_asset_name_identifier = self.config.get(
-                emulator_name, "release_asset_name_identifier")
-            self.exe_rename_required = self.config.getboolean(
-                emulator_name, "exe_rename_required")
-            self.exe_rename_filenames = self.config.get(emulator_name, "exe_rename_filenames").split(
+                section_name, "release_asset_name_identifier")
+
+            # Optional Fields
+            try:
+                self.has_sub_folder = self.config.getboolean(
+                    section_name, "has_sub_folder")
+            except:
+                self.has_sub_folder = False
+
+            self.sub_folder_name = self.config.get(
+                section_name, "sub_folder_name") if self.has_sub_folder else None
+
+            try:
+                self.release_asset_name_ignore = self.config.get(
+                    section_name, "release_asset_name_ignore")
+            except:
+                self.release_asset_name_ignore = None
+
+            try:
+                self.exe_rename_required = self.config.getboolean(
+                    section_name, "exe_rename_required")
+            except:
+                self.exe_rename_required = False
+
+            self.exe_rename_filenames = self.config.get(section_name, "exe_rename_filenames").split(
                 ", ") if self.exe_rename_required else None
-            self.copy_folder_contents_only = self.config.getboolean(
-                emulator_name, "copy_folder_contents_only")
+
+            try:
+                self.copy_folder_contents_only = self.config.getboolean(
+                    section_name, "copy_folder_contents_only")
+            except:
+                self.copy_folder_contents_only = False
+
+            try:
+                self.assest_file_extension = self.config.get(
+                    section_name, "custom_assest_file_extension")
+            except:
+                self.assest_file_extension = (".zip", ".7z")
+
         except:
-            print(f"config.ini not configured for {self.emulator_name}...")
+            print(
+                f"config.ini not configured correctly for {self.emulator_name}...")
             exit()
+
         else:
             self.emulator_directory = self.find_emulator_directory()
             if self.has_sub_folder:
                 self.emulator_directory = f"{self.emulator_directory}\\{self.sub_folder_name}"
+
             self.release_info = self.fetch_latest_release_info()
             self.download_directory = os.path.join(
-                os.getcwd(), "downloads", self.emulator_name)
-            self.SevenZip = SevenZip()
+                os.getcwd(), "downloads", self.emudeck_folder_name)
 
     def fetch_latest_release_info(self):
         response = requests.get(self.github_repo_url)
@@ -88,11 +124,11 @@ class EmulatorUpdater:
         users_path = "C:\\Users"
         for user_dir in os.listdir(users_path):
             target_path = os.path.join(
-                users_path, user_dir, "emudeck", "EmulationStation-DE", "Emulators", self.emulator_name)
+                users_path, user_dir, "emudeck", "EmulationStation-DE", "Emulators", self.emudeck_folder_name)
             if os.path.exists(target_path):
                 return target_path
         raise FileNotFoundError(
-            f"Could not find the 'Emulators\\{self.emulator_name}' directory in C:\\Users.")
+            f"Could not find the 'Emulators\\{self.emudeck_folder_name}' directory in C:\\Users.")
 
     def rename_file(self, directory_path, original_name, new_name):
         original_file_path = os.path.join(directory_path, original_name)
@@ -129,14 +165,25 @@ class EmulatorUpdater:
                     logging.info(
                         f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
                     return False
+                else:
+                    print(f"Newer version of {self.emulator_name} found...")
+                    logging.info(
+                        f"Newer version of {self.emulator_name} found...")
 
         if not os.path.exists(self.download_directory):
             os.makedirs(self.download_directory)
 
         if self.release_info is not None and 'assets' in self.release_info and self.release_info['assets'] is not None:
             download_url = next(
-                (asset['browser_download_url'] for asset in self.release_info['assets']
-                 if asset['name'].endswith((".zip", ".7z")) and self.release_asset_name_identifier in asset['name']),
+                (
+                    asset['browser_download_url']
+                    for asset in self.release_info['assets']
+                    if (
+                        asset['name'].endswith(self.assest_file_extension)
+                        and self.release_asset_name_identifier in asset['name']
+                        and (self.release_asset_name_ignore is None or self.release_asset_name_ignore not in asset['name'])
+                    )
+                ),
                 None
             )
         else:
@@ -172,7 +219,7 @@ class EmulatorUpdater:
             self.has_sub_folder = False
 
         # Remove any source code found in the downloaded extract
-        if self.has_sub_folder == "True":
+        if self.has_sub_folder:
             self.delete_files_with_extension(
                 extracted_folder_directory, ".tar.xz")
         else:
@@ -214,7 +261,7 @@ class EmulatorUpdater:
             shutil.rmtree(self.download_directory)
 
         else:
-            if self.has_sub_folder == "True":
+            if self.has_sub_folder:
                 shutil.copytree(extracted_folder_directory,
                                 self.emulator_directory, dirs_exist_ok=True)
                 shutil.rmtree(extracted_folder_directory)

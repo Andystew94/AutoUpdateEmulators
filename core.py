@@ -9,7 +9,7 @@ if __name__ == "__main__":
     # Configure logging to write to a log file
     log_file_path = os.path.join(os.getcwd(), "update_log.txt")
     logging.basicConfig(filename=log_file_path, level=logging.INFO,
-                        format='%(asctime)s - %(levelname)s - %(message)s')
+                        format='%(asctime)s - %(levelname)s - %(message)s', filemode='w')
 
     # Load configuration from config.ini
     config = ConfigParser()
@@ -23,8 +23,8 @@ if __name__ == "__main__":
             elif section == "PPSSPP":
                 updater = PPSSPPUpdater()
             else:
-                emulator_name = section
-                updater = EmulatorUpdater(emulator_name)
+                section_name = section
+                updater = EmulatorUpdater(section_name)
 
             updater.update_emulator()
 
