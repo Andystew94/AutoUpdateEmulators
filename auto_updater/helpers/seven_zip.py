@@ -7,7 +7,7 @@ class SevenZip:
     def __init__(self):
         self.seven_zip_executable = self.find_7zip_executable()
 
-    def find_7zip_executable(self, start_dir="C:\\"):
+    def find_7zip_executable(self):
         # Get a list of all connected drives
         connected_drives = [drive.device for drive in psutil.disk_partitions()]
 
