@@ -14,11 +14,6 @@ setup(
     options={
         'build_exe': {
             'packages': ['updater', 'ppsspp', 'dolphin'],
-            'include_files': [
-                f'{working_directory}/auto_updater/updater/emulator_updater.py',
-                f'{working_directory}/auto_updater/ppsspp/ppsspp_updater.py',
-                f'{working_directory}/auto_updater/dolphin/dolphin_updater.py'
-            ],
         },
     },
     executables=[
