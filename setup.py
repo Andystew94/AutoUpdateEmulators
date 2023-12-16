@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 import os
 from PyInstaller import __main__ as pyi
+from shutil import copyfile
 
 working_directory = os.path.join(os.getcwd())
 
@@ -30,3 +31,7 @@ setup(
         ])
     ]
 )
+
+# Copy the config.ini to the dist folder
+copyfile(os.path.join(working_directory, 'config.ini'),
+         os.path.join(working_directory, 'dist', 'config.ini'))
