@@ -8,14 +8,14 @@ from auto_updater.ppsspp.ppsspp_updater import PPSSPPUpdater
 from auto_updater.dolphin.dolphin_updater import DolphinUpdater
 
 try:
-    from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QProgressBar, QTextEdit
+    from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QProgressBar, QTextEdit, QDesktopWidget
     from PyQt5.QtCore import pyqtSignal, QThread, QMetaObject, Qt, Q_ARG
 except ImportError as e:
     print(f"Error importing required module: {e}")
     print("Installing necessary modules...")
     try:
         check_call(['pip', 'install', 'PyQt5'])
-        from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QProgressBar, QTextEdit
+        from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QProgressBar, QTextEdit, QDesktopWidget
         from PyQt5.QtCore import pyqtSignal, QThread, QMetaObject, Qt, Q_ARG
     except Exception as install_error:
         print(f"Error installing module: {install_error}")
@@ -67,7 +67,10 @@ class UpdateWindow(QWidget):
         layout.addWidget(self.log_text)
 
         self.setWindowTitle("Updating Emulators")
-        self.setGeometry(100, 100, 400, 300)
+        
+        desktop = QDesktopWidget()       
+        screen_rect = desktop.screenGeometry(desktop.primaryScreen())
+        self.setGeometry(screen_rect.x(), screen_rect.y(), (screen_rect.width() // 2), (screen_rect.height() // 2))
 
         self.configure_logger()
 

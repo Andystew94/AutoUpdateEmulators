@@ -21,7 +21,7 @@ setup(
             'core.py',
             '--onefile',
             '--distpath', 'dist',
-            '--name', 'Emulator_Updater.exe',
+            '--name', 'Emulator Updater.exe',
             '--noconsole'
         ])
     ]
