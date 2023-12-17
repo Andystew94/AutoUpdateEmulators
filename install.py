@@ -44,14 +44,15 @@ def main():
 
     executable_name = 'Emulator Updater.exe'
     config_name = "config.ini"
+    readme_name = "README.md"
     installation_path = 'C:\\EmulationTools\\EmulatorUpdater'
     task_name = 'EmulatorUpdaterTask'
 
     working_directory = os.getcwd()
-    print(working_directory)
 
     executable_path = os.path.join(working_directory, executable_name)
     config_path = os.path.join(working_directory, config_name)
+    readme_path = os.path.join(working_directory, readme_name)
 
     terminate_process(executable_name)
     print("Terminated existing processes")
@@ -64,10 +65,11 @@ def main():
     os.makedirs(installation_path, exist_ok=True)
     print("Created installation directory")
 
-    # Copy the executable and configuration file to the installation directory
+    # Copy the executable, configuration and readme file to the installation directory
     shutil.copy(executable_path, os.path.join(
         installation_path, executable_name))
     shutil.copy(config_path, os.path.join(installation_path, config_name))
+    shutil.copy(readme_path, os.path.join(installation_path, readme_name))
     print("Copied files to installation directory")
 
     # Create a shortcut on the desktop
@@ -76,8 +78,8 @@ def main():
     shortcut_target = os.path.join(installation_path, executable_name)
     shortcut_path = os.path.join(desktop_path, shortcut_name)
 
-    shortcut = CreateShortcut(
-        Path=shortcut_path, Target=shortcut_target, Description="Emulator Updater", StartIn=installation_path)
+    CreateShortcut(Path=shortcut_path, Target=shortcut_target,
+                   Description="Emulator Updater", StartIn=installation_path)
 
     # Prompt the user to add a scheduled task for the Emulator Updater
     add_scheduler_confirmation = input(

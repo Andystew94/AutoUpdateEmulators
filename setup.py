@@ -27,9 +27,11 @@ setup(
     ]
 )
 
-# Copy the config.ini to the dist folder
+# Copy the config.ini and README.md to the release folder
 copyfile(os.path.join(working_directory, 'config.ini'),
          os.path.join(working_directory, 'release', 'config.ini'))
+copyfile(os.path.join(working_directory, 'README.md'),
+         os.path.join(working_directory, 'release', 'README.md'))
 
 setup(
     name='Emulator_Updater_Installer',
