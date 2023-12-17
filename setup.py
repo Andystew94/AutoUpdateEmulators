@@ -20,7 +20,7 @@ setup(
         pyi.run([
             'core.py',
             '--onefile',
-            '--distpath', 'dist',
+            '--distpath', 'release',
             '--name', 'Emulator Updater.exe',
             '--noconsole'
         ])
@@ -29,4 +29,21 @@ setup(
 
 # Copy the config.ini to the dist folder
 copyfile(os.path.join(working_directory, 'config.ini'),
-         os.path.join(working_directory, 'dist', 'config.ini'))
+         os.path.join(working_directory, 'release', 'config.ini'))
+
+setup(
+    name='Emulator_Updater_Installer',
+    version='1.0',
+    description='Emulator Updater Installer',
+    author='Andrew S',
+    packages=find_packages(),
+    executables=[
+        pyi.run([
+            'install.py',
+            '--onefile',
+            '--distpath', 'release',
+            '--name', 'install.exe',
+            '--console'
+        ])
+    ]
+)

@@ -4,5 +4,5 @@ __pycache__/
 *.log
 /downloads
 /build
-/dist
+/release
 update_log.txt
