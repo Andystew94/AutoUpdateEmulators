@@ -2,6 +2,7 @@ import re
 import os
 import shutil
 import logging
+import sys
 from subprocess import check_call
 from auto_updater.helpers.seven_zip import SevenZip
 
@@ -41,8 +42,9 @@ class PPSSPPUpdater:
         self.ppsspp_win_zip_link = self._get_ppsspp_download_url()
         self.version = self._extract_version_from_url(self.ppsspp_win_zip_link)
         self.emulator_directory = self.find_emulator_directory()
+        script_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
         self.download_directory = os.path.join(
-            os.getcwd(), "downloads", self.emulator_name)
+            script_directory, "downloads", self.emulator_name)
         self.SevenZip = SevenZip()
 
     def _configure_headless_chrome(self):

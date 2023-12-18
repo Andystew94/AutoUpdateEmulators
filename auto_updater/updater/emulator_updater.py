@@ -2,6 +2,7 @@ import os
 import shutil
 from subprocess import check_call
 import logging
+import sys
 
 try:
     import requests
@@ -24,10 +25,11 @@ class EmulatorUpdater:
         self.config = ConfigParser()
         self.SevenZip = SevenZip()
         self.emulator_name = section_name
+        script_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
         try:
             self.config.read(os.path.join(
-                os.getcwd(), "config.ini"))
+                script_directory, "config.ini"))
 
             # Mandatory Fields
             self.emudeck_folder_name = self.config.get(
@@ -88,7 +90,7 @@ class EmulatorUpdater:
 
             self.release_info = self.fetch_latest_release_info()
             self.download_directory = os.path.join(
-                os.getcwd(), "downloads", self.emudeck_folder_name)
+                script_directory, "downloads", self.emudeck_folder_name)
 
     def fetch_latest_release_info(self):
         response = requests.get(self.github_repo_url)

@@ -1,5 +1,6 @@
 import os
 import logging
+import sys
 from configparser import ConfigParser
 from subprocess import check_call
 
@@ -115,12 +116,14 @@ class UpdateWindow(QWidget):
 
 
 def main():
-    log_file_path = os.path.join(os.getcwd(), "update_log.txt")
+    script_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
     config = ConfigParser()
-    config.read(os.path.join(os.getcwd(), "config.ini"))
+    config.read(os.path.join(script_directory, "config.ini"))
 
     app = QApplication([])
+
+    log_file_path = os.path.join(script_directory, "update_log.txt")
 
     window = UpdateWindow(config, log_file_path)
     window.show()

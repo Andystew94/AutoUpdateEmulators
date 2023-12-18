@@ -1,9 +1,10 @@
 from setuptools import setup, find_packages
 import os
+import sys
 from PyInstaller import __main__ as pyi
 from shutil import copyfile
 
-working_directory = os.path.join(os.getcwd())
+working_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 setup(
     name='Emulator_Updater',

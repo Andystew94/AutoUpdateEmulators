@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import sys
 
 try:
     import psutil
@@ -48,7 +49,7 @@ def main():
     installation_path = 'C:\\EmulationTools\\EmulatorUpdater'
     task_name = 'EmulatorUpdaterTask'
 
-    working_directory = os.getcwd()
+    working_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
     executable_path = os.path.join(working_directory, executable_name)
     config_path = os.path.join(working_directory, config_name)
