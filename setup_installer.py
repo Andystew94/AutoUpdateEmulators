@@ -1,7 +1,27 @@
 from setuptools import setup, find_packages
-from PyInstaller import __main__ as pyi
 import os
 import sys
+import subprocess
+
+# Required packages for install.py
+try:
+    from PyInstaller import __main__ as pyi
+except ImportError:
+    subprocess.check_call(['pip', 'install', 'PyInstaller'])
+    from PyInstaller import __main__ as pyi
+
+try:
+    from winshell import desktop, CreateShortcut
+except ImportError:
+    subprocess.check_call(['pip', 'install', 'winshell'])
+    subprocess.check_call(['pip', 'install', 'pywin32'])
+    from winshell import desktop, CreateShortcut
+
+try:
+    import psutil
+except ImportError:
+    subprocess.check_call(['pip', 'install', 'psutil'])
+    import psutil
 
 working_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 

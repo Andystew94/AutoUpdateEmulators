@@ -1,8 +1,52 @@
 from setuptools import setup, find_packages
-from PyInstaller import __main__ as pyi
 from shutil import copyfile
 import os
 import sys
+import subprocess
+
+# Required packages for core.py
+try:
+    from PyInstaller import __main__ as pyi
+except ImportError:
+    subprocess.check_call(['pip', 'install', 'PyInstaller'])
+    from PyInstaller import __main__ as pyi
+
+try:
+    import requests
+except ImportError as e:
+    try:
+        subprocess.check_call(['pip', 'install', 'requests'])
+        import requests
+    except Exception as install_error:
+        print(f"Error installing module: {install_error}")
+
+try:
+    import selenium
+except ImportError as e:
+    try:
+        subprocess.check_call(['pip', 'install', 'selenium'])
+        subprocess.check_call(["pip", "install", "--upgrade", "selenium"])
+        import selenium
+    except Exception as install_error:
+        print(f"Error installing module: {install_error}")
+
+try:
+    import psutil
+except ImportError as e:
+    try:
+        subprocess.check_call(['pip', 'install', 'psutil'])
+        import psutil
+    except Exception as install_error:
+        print(f"Error installing module: {install_error}")
+
+try:
+    import PyQt5
+except ImportError as e:
+    try:
+        subprocess.check_call(['pip', 'install', 'PyQt5'])
+        import PyQt5
+    except Exception as install_error:
+        print(f"Error installing module: {install_error}")
 
 working_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
