@@ -129,7 +129,7 @@ def main():
 
     app = QApplication([])
 
-    log_file_path = os.path.join(script_directory, "update_log.txt")
+    log_file_path = os.path.join(script_directory, "scraper.log")
 
     window = UpdateWindow(config, log_file_path)
     window.show()

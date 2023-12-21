@@ -16,10 +16,6 @@ except ImportError as e:
         print(f"Error installing module: {install_error}")
         exit(1)
 
-# Configure logging
-logging.basicConfig(filename='scraper.log', level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 class WebScrapper:
     def __init__(self):
