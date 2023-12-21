@@ -18,28 +18,14 @@ except ImportError as e:
         print(f"Error installing module: {install_error}")
         exit(1)
 
-try:
-    from selenium import webdriver
-    from selenium.webdriver.common.by import By
-except ImportError as e:
-    print(f"Error importing required module: {e}")
-    print("Installing necessary modules...")
-    try:
-        check_call(['pip', 'install', 'selenium'])
-        from selenium import webdriver
-        from selenium.webdriver.common.by import By
-    except Exception as install_error:
-        print(f"Error installing module: {install_error}")
-        exit(1)
-
 
 class PPSSPPUpdater:
-    def __init__(self):
+    def __init__(self, webscrapper):
         self.url = "https://www.ppsspp.org/download"
         self.download_name_contains = "ppsspp_win.zip"
         self.emulator_name = "PPSSPP"
-        self.driver = self._configure_headless_chrome()
-        self.ppsspp_win_zip_link = self._get_ppsspp_download_url()
+        self.webscrapper = webscrapper
+        self.ppsspp_win_zip_link = self._get_download_url()
         self.version = self._extract_version_from_url(self.ppsspp_win_zip_link)
         self.emulator_directory = self.find_emulator_directory()
         script_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -47,16 +33,10 @@ class PPSSPPUpdater:
             script_directory, "downloads", self.emulator_name)
         self.SevenZip = SevenZip()
 
-    def _configure_headless_chrome(self):
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        return webdriver.Chrome(options=options)
-
-    def _get_ppsspp_download_url(self):
+    def _get_download_url(self):
         try:
-            self.driver.get(self.url)
-            self.driver.implicitly_wait(10)
-            download_links = self.driver.find_elements(By.XPATH, "//a[@href]")
+            self.webscrapper.get_URL(self.url)
+            download_links = self.webscrapper.find_elements()
 
             for link in download_links:
                 href = link.get_attribute("href")
@@ -119,7 +99,8 @@ class PPSSPPUpdater:
         if not os.path.exists(self.download_directory):
             os.makedirs(self.download_directory)
 
-        print(f"Downloading PPSSPP to {self.emulator_directory}...")
+        print(
+            f"Downloading {self.emulator_name} to {self.emulator_directory}...")
         self.download_and_extract_release(self.ppsspp_win_zip_link)
 
         version_file_path = os.path.join(
@@ -131,6 +112,3 @@ class PPSSPPUpdater:
         shutil.rmtree(self.download_directory)
 
         logging.info(f"Updated {self.emulator_name} successfully.")
-
-        # Close the browser
-        self.driver.quit()

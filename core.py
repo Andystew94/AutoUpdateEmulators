@@ -7,6 +7,7 @@ from subprocess import check_call
 from auto_updater.updater.emulator_updater import EmulatorUpdater
 from auto_updater.ppsspp.ppsspp_updater import PPSSPPUpdater
 from auto_updater.dolphin.dolphin_updater import DolphinUpdater
+from auto_updater.helpers.web_scrapper import WebScrapper
 
 try:
     from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QProgressBar, QTextEdit, QDesktopWidget
@@ -29,14 +30,16 @@ class UpdateThread(QThread):
     def __init__(self, config):
         super().__init__()
         self.config = config
+        self.webscrapper = WebScrapper()
+        self.update_finished.emit()
 
     def run(self):
         for idx, section_name in enumerate(self.config.sections(), start=1):
             try:
                 if section_name == "Dolphin-x64":
-                    updater = DolphinUpdater()
+                    updater = DolphinUpdater(self.webscrapper)
                 elif section_name == "PPSSPP":
-                    updater = PPSSPPUpdater()
+                    updater = PPSSPPUpdater(self.webscrapper)
                 else:
                     updater = EmulatorUpdater(section_name)
 
@@ -49,6 +52,8 @@ class UpdateThread(QThread):
                 print(error_message)
                 self.update_finished.emit()
 
+        self.webscrapper.quit()
+
 
 class UpdateWindow(QWidget):
     def __init__(self, config, log_file_path):
@@ -59,7 +64,7 @@ class UpdateWindow(QWidget):
         self.progress_bar = QProgressBar(self)
         self.log_text = QTextEdit(self)
         # Store the total number of sections
-        self.total_sections = len(config.sections())
+        self.total_sections = len(config.sections()) - 1
         self.init_ui()
 
     def init_ui(self):
@@ -68,10 +73,11 @@ class UpdateWindow(QWidget):
         layout.addWidget(self.log_text)
 
         self.setWindowTitle("Updating Emulators")
-        
-        desktop = QDesktopWidget()       
+
+        desktop = QDesktopWidget()
         screen_rect = desktop.screenGeometry(desktop.primaryScreen())
-        self.setGeometry(screen_rect.x(), screen_rect.y(), (screen_rect.width() // 2), (screen_rect.height() // 2))
+        self.setGeometry(screen_rect.x(), screen_rect.y(
+        ), (screen_rect.width() // 2), (screen_rect.height() // 2))
 
         self.configure_logger()
 

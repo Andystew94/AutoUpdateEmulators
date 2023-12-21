@@ -1,6 +1,18 @@
-import psutil
 import subprocess
 import os
+from subprocess import check_call
+
+try:
+    import psutil
+except ImportError as e:
+    print(f"Error importing required module: {e}")
+    print("Installing necessary modules...")
+    try:
+        check_call(['pip', 'install', 'psutil'])
+        import psutil
+    except Exception as install_error:
+        print(f"Error installing module: {install_error}")
+        exit(1)
 
 
 class SevenZip:

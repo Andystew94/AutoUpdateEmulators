@@ -13,6 +13,7 @@ try:
     from winshell import desktop, CreateShortcut
 except ImportError:
     subprocess.check_call(['pip', 'install', 'winshell'])
+    subprocess.check_call(['pip', 'install', 'pywin32'])
     from winshell import desktop, CreateShortcut
 
 

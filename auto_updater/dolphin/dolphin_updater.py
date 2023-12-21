@@ -18,28 +18,14 @@ except ImportError as e:
         print(f"Error installing module: {install_error}")
         exit(1)
 
-try:
-    from selenium import webdriver
-    from selenium.webdriver.common.by import By
-except ImportError as e:
-    print(f"Error importing required module: {e}")
-    print("Installing necessary modules...")
-    try:
-        check_call(['pip', 'install', 'selenium'])
-        from selenium import webdriver
-        from selenium.webdriver.common.by import By
-    except Exception as install_error:
-        print(f"Error installing module: {install_error}")
-        exit(1)
-
 
 class DolphinUpdater:
-    def __init__(self):
+    def __init__(self, webscrapper):
         self.url = "https://dolphin-emu.org/download/"
         self.download_name_contains = "dolphin-master"
         self.emulator_name = "Dolphin-x64"
-        self.driver = self._configure_headless_chrome()
-        self.dolphin_win_zip_link = self._get_ppsspp_download_url()
+        self.webscrapper = webscrapper
+        self.dolphin_win_zip_link = self._get_download_url()
         self.version = self._extract_version_from_url(
             self.dolphin_win_zip_link)
         self.emulator_directory = self.find_emulator_directory()
@@ -48,23 +34,36 @@ class DolphinUpdater:
             script_directory, "downloads", self.emulator_name)
         self.SevenZip = SevenZip()
 
-    def _configure_headless_chrome(self):
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        return webdriver.Chrome(options=options)
-
-    def _get_ppsspp_download_url(self):
+    def _get_download_url(self):
         try:
-            self.driver.get(self.url)
-            self.driver.implicitly_wait(10)
-            download_links = self.driver.find_elements(By.XPATH, "//a[@href]")
+            self.webscrapper.get_URL(self.url)
+            download_links = self.webscrapper.find_elements()
+
+            pattern = r'dolphin-master-([^/]+)-x64\.7z'
+            highest_value = 0
+            matched_link = None
 
             for link in download_links:
                 href = link.get_attribute("href")
-                if self.download_name_contains in href:
-                    return href  # Return the first matching link
+                match = re.search(pattern, href)
+                if match:
+                    # Extract the value from the regex match
+                    value = match.group(1)
+                    # Convert the extracted value to an integer for comparison
+                    try:
+                        cleaned_str = ''.join(filter(str.isdigit, value))
+                        # Convert the cleaned string into an integer
+                        current_value = int(cleaned_str)
+                        # If the current value is higher than the previous highest, update the values
+                        if current_value > highest_value:
+                            highest_value = current_value
+                            matched_link = href
+                    except ValueError:
+                        # If the extracted value cannot be converted to an integer, continue to the next link
+                        continue
 
-            return None  # Return None if no matching link is found
+            return matched_link
+
         except Exception as e:
             print(f"Error: {e}")
             return None
@@ -121,7 +120,8 @@ class DolphinUpdater:
         if not os.path.exists(self.download_directory):
             os.makedirs(self.download_directory)
 
-        print(f"Downloading PPSSPP to {self.emulator_directory}...")
+        print(
+            f"Downloading {self.emulator_name} to {self.emulator_directory}...")
         self.download_and_extract_release(self.dolphin_win_zip_link)
 
         extracted_folder_name = os.listdir(self.download_directory)[0]
@@ -148,6 +148,3 @@ class DolphinUpdater:
         shutil.rmtree(self.download_directory)
 
         logging.info(f"Updated {self.emulator_name} successfully.")
-
-        # Close the browser
-        self.driver.quit()
