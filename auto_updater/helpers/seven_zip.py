@@ -41,8 +41,13 @@ class SevenZip:
             command = [self.seven_zip_executable, "x",
                        archive_path, f"-o{extract_path}", "-y"]
 
+            # Subprocess will run in headless
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+            
             # Run the command
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True, startupinfo=startupinfo)
             print("Extraction successful.")
         except subprocess.CalledProcessError as e:
             print(f"Error during extraction: {e}")
