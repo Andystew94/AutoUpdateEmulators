@@ -7,7 +7,11 @@ NOTE: Windows Only.
 ## Building the EXE from the source
 
 ```bash
-python setup.py build
+python setup_emulator_updater.py build
+```
+
+```bash
+python setup_installer.py build
 ```
 
 ## Installing the script
