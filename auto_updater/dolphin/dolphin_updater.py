@@ -65,6 +65,7 @@ class DolphinUpdater:
             return matched_link
 
         except Exception as e:
+            logging.error(f"Error: {e}")
             print(f"Error: {e}")
             return None
 
@@ -81,6 +82,8 @@ class DolphinUpdater:
                 users_path, user_dir, "emudeck", "EmulationStation-DE", "Emulators", self.emulator_name)
             if os.path.exists(target_path):
                 return target_path
+        logging.error(
+            f"Could not find the 'Emulators\\{self.emulator_name}' directory in C:\\Users.")
         raise FileNotFoundError(
             f"Could not find the 'Emulators\\{self.emulator_name}' directory in C:\\Users.")
 
@@ -116,6 +119,10 @@ class DolphinUpdater:
                     logging.info(
                         f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
                     return False
+                else:
+                    print(f"Newer version of {self.emulator_name} found...")
+                    logging.info(
+                        f"Newer version of {self.emulator_name} found...")
 
         if not os.path.exists(self.download_directory):
             os.makedirs(self.download_directory)

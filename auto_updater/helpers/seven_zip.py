@@ -1,6 +1,7 @@
 import subprocess
 import os
 from subprocess import check_call
+import logging
 
 try:
     import psutil
@@ -31,6 +32,7 @@ class SevenZip:
                         return os.path.join(dirpath, filename)
 
         # If the executable is not found, you can raise an exception or return None
+        logging.error("7-Zip executable not found")
         raise FileNotFoundError("7-Zip executable not found")
 
     def extract_with_7zip(self, archive_path, extract_path):
@@ -44,5 +46,7 @@ class SevenZip:
             print("Extraction successful.")
         except subprocess.CalledProcessError as e:
             print(f"Error during extraction: {e}")
+            logging.error(f"Error during extraction: {e}")
         except FileNotFoundError as e:
             print(f"Error: {e}")
+            logging.error(f"Error: {e}")

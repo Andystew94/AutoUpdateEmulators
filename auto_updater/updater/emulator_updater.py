@@ -81,6 +81,8 @@ class EmulatorUpdater:
         except:
             print(
                 f"config.ini not configured correctly for {self.emulator_name}...")
+            logging.error(
+                f"config.ini not configured correctly for {self.emulator_name}...")
             exit()
 
         else:
@@ -129,6 +131,8 @@ class EmulatorUpdater:
                 users_path, user_dir, "emudeck", "EmulationStation-DE", "Emulators", self.emudeck_folder_name)
             if os.path.exists(target_path):
                 return target_path
+        logging.error(
+            f"Could not find the 'Emulators\\{self.emudeck_folder_name}' directory in C:\\Users.")
         raise FileNotFoundError(
             f"Could not find the 'Emulators\\{self.emudeck_folder_name}' directory in C:\\Users.")
 
@@ -153,6 +157,7 @@ class EmulatorUpdater:
 
         except Exception as e:
             print(f"Error deleting files: {e}")
+            logging.error(f"Error deleting files: {e}")
 
     def update_emulator(self):
         existing_version_file_path = os.path.join(
@@ -192,9 +197,12 @@ class EmulatorUpdater:
             # Handle the case where assets or release_info is None
             print(
                 f"Error: Release information or assets are not available for {self.emulator_name}. Check github_repo_url in config.ini")
+            logging.error(
+                f"Error: Release information or assets are not available for {self.emulator_name}. Check github_repo_url in config.ini")
             exit()
 
         if download_url is None:
+            logging.error(f"No matching file found in the latest release.")
             raise RuntimeError(
                 f"No matching file found in the latest release.")
 
