@@ -9,13 +9,13 @@ from auto_updater.helpers.seven_zip import SevenZip
 try:
     import requests
 except ImportError as e:
-    print(f"Error importing required module: {e}")
-    print("Installing necessary modules...")
+    logging.error(f"Error importing required module: {e}")
+    logging.info("Installing necessary modules...")
     try:
         check_call(['pip', 'install', 'requests'])
         import requests
     except Exception as install_error:
-        print(f"Error installing module: {install_error}")
+        logging.error(f"Error installing module: {install_error}")
         exit(1)
 
 
@@ -66,7 +66,6 @@ class DolphinUpdater:
 
         except Exception as e:
             logging.error(f"Error: {e}")
-            print(f"Error: {e}")
             return None
 
     def _extract_version_from_url(self, url):
@@ -91,16 +90,23 @@ class DolphinUpdater:
         file_name = os.path.basename(download_url)
         downloads_file_path = os.path.join(self.download_directory, file_name)
 
+        logging.info(f"Downloading...")
+
         with requests.get(download_url, stream=True) as response:
             response.raise_for_status()
             with open(downloads_file_path, "wb") as file:
                 shutil.copyfileobj(response.raw, file)
+
+        logging.info(f"Extracting...")
 
         self.SevenZip.extract_with_7zip(
             downloads_file_path, self.download_directory)
         os.remove(downloads_file_path)
 
     def write_version_file(self, version_file_path, version_identifier):
+
+        logging.info(
+            f"Updating version.txt file with the following Version ID: {version_identifier}")
         with open(version_file_path, 'w') as version_file:
             version_file.write(version_identifier)
 
@@ -114,21 +120,15 @@ class DolphinUpdater:
             with open(existing_version_file_path, 'r') as existing_version_file:
                 existing_version = existing_version_file.read().strip()
                 if existing_version == str(repo_version):
-                    print(
-                        f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
                     logging.info(
-                        f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
+                        f"Latest version of {self.emulator_name} is already installed...")
                     return False
-                else:
-                    print(f"Newer version of {self.emulator_name} found...")
-                    logging.info(
-                        f"Newer version of {self.emulator_name} found...")
+
+        logging.info(f"Newer version of {self.emulator_name} found...")
 
         if not os.path.exists(self.download_directory):
             os.makedirs(self.download_directory)
 
-        print(
-            f"Downloading {self.emulator_name} to {self.emulator_directory}...")
         self.download_and_extract_release(self.dolphin_win_zip_link)
 
         extracted_folder_name = os.listdir(self.download_directory)[0]
@@ -142,6 +142,8 @@ class DolphinUpdater:
         contents = os.listdir(extracted_folder_directory)
 
         # Copy each item in the source directory to the destination directory
+        logging.info(
+            f"Moving extracted files to {self.emulator_name} directory...")
         for item in contents:
             source_item = os.path.join(extracted_folder_directory, item)
             destination_item = os.path.join(self.emulator_directory, item)

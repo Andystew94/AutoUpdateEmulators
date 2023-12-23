@@ -49,7 +49,6 @@ class UpdateThread(QThread):
             except Exception as e:
                 error_message = f"Error updating {section_name}: {e}"
                 logging.error(error_message)
-                print(error_message)
                 self.update_finished.emit()
 
         self.webscrapper.quit()

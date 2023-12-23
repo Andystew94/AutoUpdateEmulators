@@ -6,13 +6,13 @@ import logging
 try:
     import psutil
 except ImportError as e:
-    print(f"Error importing required module: {e}")
-    print("Installing necessary modules...")
+    logging.error(f"Error importing required module: {e}")
+    logging.info("Installing necessary modules...")
     try:
         check_call(['pip', 'install', 'psutil'])
         import psutil
     except Exception as install_error:
-        print(f"Error installing module: {install_error}")
+        logging.error(f"Error installing module: {install_error}")
         exit(1)
 
 
@@ -45,13 +45,11 @@ class SevenZip:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             startupinfo.wShowWindow = subprocess.SW_HIDE
-            
+
             # Run the command
             subprocess.run(command, check=True, startupinfo=startupinfo)
-            print("Extraction successful.")
+            logging.info("Extraction successful...")
         except subprocess.CalledProcessError as e:
-            print(f"Error during extraction: {e}")
             logging.error(f"Error during extraction: {e}")
         except FileNotFoundError as e:
-            print(f"Error: {e}")
             logging.error(f"Error: {e}")

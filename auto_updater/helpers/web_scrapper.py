@@ -5,27 +5,27 @@ try:
     from selenium import webdriver
     from selenium.webdriver.common.by import By
 except ImportError as e:
-    print(f"Error importing required module: {e}")
-    print("Installing necessary modules...")
+    logging.error(f"Error importing required module: {e}")
+    logging.info("Installing necessary modules...")
     try:
         check_call(['pip', 'install', 'selenium'])
         check_call(["pip", "install", "--upgrade", "selenium"])
         from selenium import webdriver
         from selenium.webdriver.common.by import By
     except Exception as install_error:
-        print(f"Error installing module: {install_error}")
+        logging.error(f"Error installing module: {install_error}")
         exit(1)
 
 
 class WebScrapper:
     def __init__(self):
         try:
-            logging.info("Initialising selenium for scraping...")
+            logging.info("Initialising Selenium for scraping...")
             self.driver = self._configure_headless_chrome()
-            logging.info("Initialisation complete")
+            logging.info("Initialisation complete...")
         except Exception as e:
-            logging.error(f"Failed to initialise selenium: {e}")
-            raise SystemError("Failed to initialise selenium")
+            logging.error(f"Failed to initialise Selenium: {e}")
+            raise SystemError("Failed to initialise Selenium")
 
     def _configure_headless_chrome(self):
         options = webdriver.ChromeOptions()
@@ -45,6 +45,7 @@ class WebScrapper:
 
     def quit(self):
         self.driver.quit()
+        logging.info(f"Selenium closed gracefully...")
 
 
 def main():

@@ -7,13 +7,13 @@ import sys
 try:
     import requests
 except ImportError as e:
-    print(f"Error importing required module: {e}")
-    print("Installing necessary modules...")
+    logging.error(f"Error importing required module: {e}")
+    logging.info("Installing necessary modules...")
     try:
         check_call(['pip', 'install', 'requests'])
         import requests
     except Exception as install_error:
-        print(f"Error installing module: {install_error}")
+        logging.error(f"Error installing module: {install_error}")
         exit(1)
 
 from configparser import ConfigParser
@@ -79,8 +79,6 @@ class EmulatorUpdater:
                 self.assest_file_extension = (".zip", ".7z")
 
         except:
-            print(
-                f"config.ini not configured correctly for {self.emulator_name}...")
             logging.error(
                 f"config.ini not configured correctly for {self.emulator_name}...")
             exit()
@@ -95,6 +93,8 @@ class EmulatorUpdater:
                 script_directory, "downloads", self.emudeck_folder_name)
 
     def fetch_latest_release_info(self):
+        logging.info(
+            f"Fetching latest {self.emulator_name} release assets info from github api...")
         response = requests.get(self.github_repo_url)
 
         try:
@@ -111,16 +111,23 @@ class EmulatorUpdater:
     def download_and_extract_release(self, download_url, file_name):
         downloads_file_path = os.path.join(self.download_directory, file_name)
 
+        logging.info(f"Downloading...")
+
         with requests.get(download_url, stream=True) as response:
             response.raise_for_status()
             with open(downloads_file_path, "wb") as file:
                 shutil.copyfileobj(response.raw, file)
+
+        logging.info(f"Extracting...")
 
         self.SevenZip.extract_with_7zip(
             downloads_file_path, self.download_directory)
         os.remove(downloads_file_path)
 
     def write_version_file(self, version_file_path, version_identifier):
+
+        logging.info(
+            f"Updating version.txt file with the following Version ID: {version_identifier}")
         with open(version_file_path, 'w') as version_file:
             version_file.write(version_identifier)
 
@@ -141,7 +148,9 @@ class EmulatorUpdater:
         new_file_path = os.path.join(directory_path, new_name)
         if os.path.exists(original_file_path):
             os.rename(original_file_path, new_file_path)
-            print(f"Renamed {original_name} to {new_name}")
+        else:
+            logging.error(
+                f"Failed to rename {original_file_path} to {new_file_path}")
 
     def delete_files_with_extension(self, directory, extension):
         try:
@@ -153,11 +162,10 @@ class EmulatorUpdater:
                 if os.path.isfile(item_path) and item.endswith(extension):
                     # Delete the file
                     os.remove(item_path)
-                    print(f"Deleted: {item_path}")
 
         except Exception as e:
-            print(f"Error deleting files: {e}")
-            logging.error(f"Error deleting files: {e}")
+            logging.error(
+                f"Error deleting files with requested extension/s: {e}")
 
     def update_emulator(self):
         existing_version_file_path = os.path.join(
@@ -167,15 +175,12 @@ class EmulatorUpdater:
             with open(existing_version_file_path, 'r') as existing_version_file:
                 existing_version = existing_version_file.read().strip()
                 if existing_version == str(self.release_info[self.github_version_identifier]):
-                    print(
-                        f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
                     logging.info(
-                        f"Latest version of {self.emulator_name} is already downloaded. Exiting.")
+                        f"Latest version of {self.emulator_name} is already installed - No Update Required")
                     return False
-                else:
-                    print(f"Newer version of {self.emulator_name} found...")
-                    logging.info(
-                        f"Newer version of {self.emulator_name} found...")
+
+        logging.info(
+            f"Newer version of {self.emulator_name} found...")
 
         if not os.path.exists(self.download_directory):
             os.makedirs(self.download_directory)
@@ -195,8 +200,6 @@ class EmulatorUpdater:
             )
         else:
             # Handle the case where assets or release_info is None
-            print(
-                f"Error: Release information or assets are not available for {self.emulator_name}. Check github_repo_url in config.ini")
             logging.error(
                 f"Error: Release information or assets are not available for {self.emulator_name}. Check github_repo_url in config.ini")
             exit()
@@ -208,7 +211,6 @@ class EmulatorUpdater:
 
         file_name = os.path.basename(download_url)
 
-        print(f"Downloading {file_name} to {self.emulator_directory}...")
         self.download_and_extract_release(download_url, file_name)
 
         extracted_folder_name = os.listdir(self.download_directory)[0]
@@ -254,6 +256,9 @@ class EmulatorUpdater:
         if not os.path.exists(self.emulator_directory):
             os.makedirs(self.emulator_directory)
 
+        logging.info(
+            f"Moving extracted files to {self.emulator_name} directory...")
+
         if self.copy_folder_contents_only:
             contents = os.listdir(extracted_folder_directory)
 
@@ -280,6 +285,5 @@ class EmulatorUpdater:
                                 self.emulator_directory, dirs_exist_ok=True)
                 shutil.rmtree(self.download_directory)
 
-        print(f"Updated {self.emulator_name} successfully.")
         logging.info(f"Updated {self.emulator_name} successfully.")
         return True
