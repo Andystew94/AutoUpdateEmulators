@@ -58,7 +58,7 @@ setup(
     packages=find_packages(),
     options={
         'build_exe': {
-            'packages': ['updater', 'ppsspp', 'dolphin'],
+            'packages': ['updater'],
         },
     },
 )

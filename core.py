@@ -4,10 +4,9 @@ import sys
 from configparser import ConfigParser
 from subprocess import check_call
 
-from auto_updater.updater.emulator_updater import EmulatorUpdater
-from auto_updater.ppsspp.ppsspp_updater import PPSSPPUpdater
-from auto_updater.dolphin.dolphin_updater import DolphinUpdater
+from auto_updater.updater.updater_github import EmulatorUpdater
 from auto_updater.helpers.web_scrapper import WebScrapper
+from auto_updater.updater.updater_scrapper import UpdaterScrapper
 
 try:
     from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QProgressBar, QTextEdit, QDesktopWidget
@@ -36,12 +35,12 @@ class UpdateThread(QThread):
     def run(self):
         for idx, section_name in enumerate(self.config.sections(), start=1):
             try:
-                if section_name == "Dolphin-x64":
-                    updater = DolphinUpdater(self.webscrapper)
-                elif section_name == "PPSSPP":
-                    updater = PPSSPPUpdater(self.webscrapper)
-                else:
+                scrape_method = self.config.get(section_name, "scrape_method")
+
+                if scrape_method == "github_api":
                     updater = EmulatorUpdater(section_name)
+                elif scrape_method == "selinium":
+                    updater = UpdaterScrapper(section_name, self.webscrapper)
 
                 updater.update_emulator()
                 self.update_finished.emit()
