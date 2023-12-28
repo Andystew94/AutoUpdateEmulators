@@ -65,8 +65,6 @@ setup(
 
 # After setup, copy necessary files to the release directory
 release_directory = os.path.join(working_directory, 'release')
-if not os.path.exists(release_directory):
-    os.makedirs(release_directory)
 
 copyfile(os.path.join(working_directory, 'config.ini'),
          os.path.join(release_directory, 'config.ini'))

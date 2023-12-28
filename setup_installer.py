@@ -35,8 +35,6 @@ setup(
 
 # After setup, copy necessary files to the release directory
 release_directory = os.path.join(working_directory, 'release')
-if not os.path.exists(release_directory):
-    os.makedirs(release_directory)
 
 # Build the installer executable using PyInstaller
 pyi.run([
