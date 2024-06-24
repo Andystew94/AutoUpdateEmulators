@@ -273,17 +273,15 @@ class EmulatorUpdater:
                 else:
                     # Use copy2 to preserve metadata if needed
                     shutil.copy2(source_item, destination_item)
-            shutil.rmtree(self.download_directory)
 
         else:
             if self.has_sub_folder:
                 shutil.copytree(extracted_folder_directory,
                                 self.emulator_directory, dirs_exist_ok=True)
-                shutil.rmtree(extracted_folder_directory)
             else:
                 shutil.copytree(self.download_directory,
                                 self.emulator_directory, dirs_exist_ok=True)
-                shutil.rmtree(self.download_directory)
 
         logging.info(f"Updated {self.emulator_name} successfully.")
+        shutil.rmtree(self.download_directory)
         return True
