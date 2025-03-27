@@ -6,3 +6,4 @@ __pycache__/
 /build
 /release
 update_log.txt
+.vs/
